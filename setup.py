@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tranco",
-    version="0.2",
+    version="0.3",
     author="Victor Le Pochat",
     author_email="victor.lepochat@cs.kuleuven.be",
     description="Tranco: A Research-Oriented Top Sites Ranking Hardened Against Manipulation",

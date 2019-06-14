@@ -66,10 +66,23 @@ class Tranco():
     def _download_zip_file(self, list_id):
         download_url = 'https://tranco-list.eu/download_daily/{}'.format(list_id)
         r = requests.get(download_url, stream=True)
-        with zipfile.ZipFile(BytesIO(r.content)) as z:
-            with z.open('top-1m.csv') as csvf:
-                lst = csvf.read().decode("utf-8")
+        if r.status_code == 200:
+            with zipfile.ZipFile(BytesIO(r.content)) as z:
+                with z.open('top-1m.csv') as csvf:
+                    lst = csvf.read().decode("utf-8")
+                    if self.should_cache:
+                        with open(self._cache_path(list_id), 'w') as f:
+                            f.write(lst)
+                    return lst
+        elif r.status_code == 403:
+            # List not available as ZIP file
+            download_url = 'https://tranco-list.eu/download/{}/1000000'.format(list_id)
+            r2 = requests.get(download_url)
+            if r2.status_code == 200:
+                lst = r2.content.decode("utf-8")
                 if self.should_cache:
                     with open(self._cache_path(list_id), 'w') as f:
                         f.write(lst)
                 return lst
+            else:
+                raise AttributeError("The daily list for this date is currently unavailable.")
