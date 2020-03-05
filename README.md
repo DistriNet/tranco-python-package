@@ -1,6 +1,6 @@
 # Tranco
 
-This package allows easy access to the Tranco list, published at [https://tranco-list.eu]().
+This package allows easy access to the Tranco list, published at [https://tranco-list.eu](https://tranco-list.eu/).
 
 ## Usage
 
