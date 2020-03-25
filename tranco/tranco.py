@@ -86,3 +86,9 @@ class Tranco():
                 return lst
             else:
                 raise AttributeError("The daily list for this date is currently unavailable.")
+        elif r.status_code == 502:
+            # List unavailable (bad gateway)
+            raise AttributeError("The daily list for this date is currently unavailable.")
+        else:
+            # List unavailable (non-success status code)
+            raise AttributeError("The daily list for this date is currently unavailable.")
