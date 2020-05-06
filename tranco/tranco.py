@@ -43,7 +43,7 @@ class Tranco():
         return os.path.join(self.cache_dir, date + '-DEFAULT.csv')
 
     def list(self, date='latest'):
-        if date is 'latest':
+        if date == 'latest':
             yesterday = (datetime.utcnow() - timedelta(days=1))
             date = yesterday.strftime('%Y-%m-%d')
         list_id = self._get_list_id_for_date(date)
@@ -69,20 +69,22 @@ class Tranco():
         if r.status_code == 200:
             with zipfile.ZipFile(BytesIO(r.content)) as z:
                 with z.open('top-1m.csv') as csvf:
-                    lst = csvf.read().decode("utf-8")
+                    file_bytes = csvf.read()
                     if self.should_cache:
-                        with open(self._cache_path(list_id), 'w') as f:
-                            f.write(lst)
+                        with open(self._cache_path(list_id), 'wb') as f:
+                            f.write(file_bytes)
+                    lst = file_bytes.decode("utf-8")
                     return lst
         elif r.status_code == 403:
             # List not available as ZIP file
             download_url = 'https://tranco-list.eu/download/{}/1000000'.format(list_id)
             r2 = requests.get(download_url)
             if r2.status_code == 200:
-                lst = r2.content.decode("utf-8")
+                file_bytes = r2.content
                 if self.should_cache:
-                    with open(self._cache_path(list_id), 'w') as f:
-                        f.write(lst)
+                    with open(self._cache_path(list_id), 'wb') as f:
+                        f.write(file_bytes)
+                lst = file_bytes.decode("utf-8")
                 return lst
             else:
                 raise AttributeError("The daily list for this date is currently unavailable.")
