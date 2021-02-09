@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="tranco",
-    version="0.5",
+    version="0.6",
     author="Victor Le Pochat",
     author_email="victor.lepochat@kuleuven.be",
     description="Tranco: A Research-Oriented Top Sites Ranking Hardened Against Manipulation",
@@ -14,7 +14,6 @@ setuptools.setup(
     url="https://github.com/DistriNet/tranco-python-package",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
