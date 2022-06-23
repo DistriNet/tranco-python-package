@@ -4,23 +4,27 @@ from io import BytesIO
 import requests
 import os
 from datetime import datetime, timedelta
+from collections import OrderedDict
+import itertools
 
 
-class TrancoList():
+class TrancoList:
     def __init__(self, date, list_id, lst):
         self.date = date
         self.list_id = list_id
         self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
-        self.list = lst
+        self.od = OrderedDict(zip(lst, list(range(1, len(lst) + 1))))
+
+    @property
+    def list(self):
+        return list(self.od.keys())
 
     def top(self, num=1000000):
-        return self.list[:num]
+        return list(itertools.islice(self.od.keys(), num))
 
     def rank(self, domain):
-        try:
-            return self.list.index(domain) + 1
-        except ValueError:
-            return -1
+        return self.od.get(domain, -1)
+
 
 class Tranco():
     def __init__(self, **kwargs):
@@ -48,6 +52,9 @@ class Tranco():
         return os.path.join(self.cache_dir, date + '-DEFAULT.csv')
 
     def list(self, date=None, list_id=None):
+        return TrancoList(date, list_id, self._get_list(date, list_id))
+
+    def _get_list(self, date=None, list_id=None):
         if date and list_id:
             raise ValueError("You can't pass a date as well as a list ID.")
 
@@ -63,7 +70,7 @@ class Tranco():
         else:
             top_list_text = self._download_zip_file(list_id)
 
-        return TrancoList(date, list_id, list(map(lambda x: x[x.index(',') + 1:], top_list_text.splitlines())))
+        return list(map(lambda x: x[x.index(',') + 1:], top_list_text.splitlines()))
 
     def _get_list_id_for_date(self, date):
         r1 = requests.get('https://tranco-list.eu/daily_list_id?date={}'.format(date))
