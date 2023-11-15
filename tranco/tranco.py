@@ -13,8 +13,6 @@ class TrancoList():
         self.list_id = list_id
         self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
         self.list = {domain: index for index, domain in enumerate(lst, start=1)}
-        self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})
 
     def top(self, num=1000000):
         return sorted(self.list, key=self.list.get)[:num]
@@ -43,6 +41,9 @@ class Tranco():
 
         self.account_email = kwargs.get('account_email')
         self.api_key = kwargs.get('api_key')
+
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})
 
     def _cache_path(self, date):
         return os.path.join(self.cache_dir, date + '-DEFAULT.csv')
