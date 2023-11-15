@@ -5,7 +5,7 @@ import os
 import platform
 import zipfile
 
-VERSION = '0.7'
+VERSION = '0.7.1'
 
 class TrancoList():
     def __init__(self, date, list_id, lst):
