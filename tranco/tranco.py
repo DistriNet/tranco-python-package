@@ -1,10 +1,11 @@
-import zipfile
+from datetime import datetime, timedelta
 from io import BytesIO
-
 import requests
 import os
-from datetime import datetime, timedelta
+import sys
+import zipfile
 
+VERSION = '0.7'
 
 class TrancoList():
     def __init__(self, date, list_id, lst):
@@ -12,6 +13,8 @@ class TrancoList():
         self.list_id = list_id
         self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
         self.list = {domain: index for index, domain in enumerate(lst, start=1)}
+        self.session = requests.Session()
+        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})'})
 
     def top(self, num=1000000):
         return sorted(self.list, key=self.list.get)[:num]
@@ -63,7 +66,7 @@ class Tranco():
         return TrancoList(date, list_id, list(map(lambda x: x[x.index(',') + 1:], top_list_text.splitlines())))
 
     def _get_list_id_for_date(self, date):
-        r1 = requests.get('https://tranco-list.eu/daily_list_id?date={}'.format(date))
+        r1 = self.session.get('https://tranco-list.eu/daily_list_id?date={}'.format(date))
         if r1.status_code == 200:
             return r1.text
         else:
@@ -71,7 +74,7 @@ class Tranco():
 
     def _download_zip_file(self, list_id):
         download_url = 'https://tranco-list.eu/download_daily/{}'.format(list_id)
-        r = requests.get(download_url, stream=True)
+        r = self.session.get(download_url, stream=True)
         if r.status_code == 200:
             with zipfile.ZipFile(BytesIO(r.content)) as z:
                 with z.open('top-1m.csv') as csvf:
@@ -84,7 +87,7 @@ class Tranco():
         elif r.status_code == 403:
             # List not available as ZIP file
             download_url = 'https://tranco-list.eu/download/{}/1000000'.format(list_id)
-            r2 = requests.get(download_url)
+            r2 = self.session.get(download_url)
             if r2.status_code == 200:
                 file_bytes = r2.content
                 if self.should_cache:
@@ -131,7 +134,7 @@ class Tranco():
         if not isinstance(configuration, dict):
             raise ValueError("You supplied an invalid configuration.")
 
-        r = requests.put(
+        r = self.session.put(
             "https://tranco-list.eu/api/lists/create",
             auth=(self.account_email, self.api_key),
             json=configuration
@@ -168,7 +171,7 @@ class Tranco():
         }
         ```
         """
-        r = requests.get("https://tranco-list.eu/api/lists/id/{list_id}".format(list_id=list_id))
+        r = self.session.get("https://tranco-list.eu/api/lists/id/{list_id}".format(list_id=list_id))
         if r.status_code == 404:
             raise ValueError("There is no list with the given ID.")
         else:
