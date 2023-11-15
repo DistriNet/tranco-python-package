@@ -11,10 +11,10 @@ class TrancoList():
         self.date = date
         self.list_id = list_id
         self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
-        self.list = {domain: index + 1 for index, domain in enumerate(lst)}
+        self.list = {domain: index for index, domain in enumerate(lst, start=1)}
 
     def top(self, num=1000000):
-        return [domain for domain in sorted(self.list, key=self.list.get)][:num]
+        return sorted(self.list, key=self.list.get)[:num]
 
     def rank(self, domain):
         return self.list.get(domain, -1)
