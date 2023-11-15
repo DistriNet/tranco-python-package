@@ -14,7 +14,7 @@ class TrancoList():
         self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
         self.list = {domain: index for index, domain in enumerate(lst, start=1)}
         self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})'})
+        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})
 
     def top(self, num=1000000):
         return sorted(self.list, key=self.list.get)[:num]
