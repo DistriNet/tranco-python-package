@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from io import BytesIO
 import requests
 import os
-import sys
+import platform
 import zipfile
 
 VERSION = '0.7'
@@ -43,7 +43,7 @@ class Tranco():
         self.api_key = kwargs.get('api_key')
 
         self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(sys.version, requests.__version__, VERSION)})
+        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(platform.python_version(), requests.__version__, VERSION)})
 
     def _cache_path(self, date):
         return os.path.join(self.cache_dir, date + '-DEFAULT.csv')
