@@ -4,7 +4,7 @@ This package allows easy access to the Tranco list, published at [https://tranco
 
 ## Usage
 
-Create a `Tranco` object, indicating whether you want to cache downloaded lists:
+Create a `Tranco` object, indicating where you want to cache downloaded lists (caching is required):
 ```python
 from tranco import Tranco
 t = Tranco(cache=True, cache_dir='.tranco')
@@ -16,6 +16,12 @@ You can then retrieve lists from this object using the `list` method:
 latest_list = t.list()
 date_list = t.list(date='2019-02-25')
 ```
+
+The `list` method accepts the following parameters:
+- `date`: the date of the list you want to retrieve (in the format `YYYY-MM-DD`). If not given, the latest daily list is returned
+- `list_id`: the ID of the list you want to retrieve. If neither list ID nor date are given, the latest daily list is returned. If both are given, you will get an exception
+- `subdomains`: whether to include subdomains; only relevant when requesting a daily list. Default: False
+- `full`: whether to retrieve the full list (else only the top million). Default: False
 
 This method returns a `TrancoList`, which allows you to retrieve a certain prefix of the list (`top`), 
 the list ID (`list_id`), the list page (`list_page`) or the rank of a domain (`rank`):
