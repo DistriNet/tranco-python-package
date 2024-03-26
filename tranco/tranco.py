@@ -109,20 +109,8 @@ class Tranco():
         """
         Configure a custom list (https://tranco-list.eu/configure).
         Requires that valid credentials were passed when creating the `Tranco` object.
-        :param configuration: dictionary that conforms to the following schema
-                              (https://tranco-list.eu/api_documentation#datatypes-configuration):
-                            ```
-                            {
-                              "providers": [
-                                String("alexa"|"majestic"|"umbrella")
-                              ],
-                              "startDate": Date(YYYY-mm-dd),
-                              "endDate": Date(YYYY-mm-dd),
-                              "combinationMethod": String("dowdall"|"borda"),
-                              "listPrefix": Integer|"full",  # Only aggregate domains from the list prefixes of length
-                              "filterPLD": "on"|"off"  # Whether to retain only pay-level domains
-                            }
-                            ```
+        :param configuration: dictionary that conforms to the schema at
+                              https://tranco-list.eu/api_documentation#datatypes-configuration
         :return Tuple[bool, str]: whether the list is already available; the ID (to be) assigned to this list.
         Use `list_metadata` with this ID to (continuously) check whether the list has finished generating
          and is now available.
