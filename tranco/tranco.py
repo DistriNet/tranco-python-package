@@ -2,6 +2,7 @@ import json
 from datetime import datetime, timedelta
 from io import BytesIO
 from itertools import islice
+from typing import Dict, List, Optional, Tuple, Any
 
 import requests
 import os
@@ -12,26 +13,29 @@ from enum import IntEnum
 
 VERSION = '0.8.0'
 
-class TrancoList():
-    def __init__(self, date, list_id, lst):
-        self.date = date
-        self.list_id = list_id
-        self.list_page = "https://tranco-list.eu/list/{}/1000000".format(list_id)
-        self.list = {domain: index for index, domain in enumerate(lst, start=1)}
 
-    def top(self, num=1000000):
+class TrancoList:
+    def __init__(self, date: str, list_id: str, lst: List[str]) -> None:
+        self.date: str = date
+        self.list_id: str = list_id
+        self.list_page: str = "https://tranco-list.eu/list/{}/".format(list_id)
+        self.list: Dict[str, int] = {domain: index for index, domain in enumerate(lst, start=1)}
+
+    def top(self, num: int = 1000000) -> List[str]:
         return sorted(self.list, key=self.list.get)[:num]
 
-    def rank(self, domain):
+    def rank(self, domain: str) -> int:
         return self.list.get(domain, -1)
+
 
 class TrancoCacheType(IntEnum):
     NOT_CACHED = 0
     CACHED_NOT_FULL = 1
     CACHED_FULL = 2
 
-class Tranco():
-    def __init__(self, **kwargs):
+
+class Tranco:
+    def __init__(self, **kwargs) -> None:
         """
         :param kwargs:
             cache_dir: <str> directory used to cache Tranco top lists, default: cwd + .tranco/
@@ -40,44 +44,45 @@ class Tranco():
         """
 
         # Caching is required.
-        self.cache_dir = kwargs.get('cache_dir', None)
+        self.cache_dir: Optional[str] = kwargs.get('cache_dir', None)
         if self.cache_dir is None:
             cwd = os.getcwd()
             self.cache_dir = os.path.join(cwd, '.tranco')
         if not os.path.exists(self.cache_dir):
             os.mkdir(self.cache_dir)
-        self.cache_metadata = {}
+        self.cache_metadata: Dict[str, TrancoCacheType] = {}
         self._load_cache_metadata()
 
-        self.account_email = kwargs.get('account_email')
-        self.api_key = kwargs.get('api_key')
+        self.account_email: str = kwargs.get('account_email')
+        self.api_key: str = kwargs.get('api_key')
 
-        self.session = requests.Session()
-        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(platform.python_version(), requests.__version__, VERSION)})
+        self.session: requests.Session = requests.Session()
+        self.session.headers.update({'User-Agent': 'Python/{} python-requests/{} tranco-python/{}'.format(
+            platform.python_version(), requests.__version__, VERSION)})
 
-    def _cache_metadata_path(self):
+    def _cache_metadata_path(self) -> str:
         return os.path.join(self.cache_dir, 'metadata.json')
 
-    def _cache_path(self, list_id):
+    def _cache_path(self, list_id) -> str:
         return os.path.join(self.cache_dir, '{}.csv'.format(list_id))
 
-    def _load_cache_metadata(self):
+    def _load_cache_metadata(self) -> None:
         if not os.path.exists(self._cache_metadata_path()):
             self._write_cache_metadata()
         with open(self._cache_metadata_path(), "rt") as f:
             self.cache_metadata = json.load(f)
 
-    def _write_cache_metadata(self):
+    def _write_cache_metadata(self) -> None:
         with open(self._cache_metadata_path(), 'wt') as f:
             json.dump(self.cache_metadata, f)
 
-    def _get_list_cache(self, list_id):
+    def _get_list_cache(self, list_id) -> TrancoCacheType:
         return self.cache_metadata.get(list_id, TrancoCacheType.NOT_CACHED)
 
-    def _is_cached(self, list_id, full=False):
+    def _is_cached(self, list_id: Optional[str], full: bool = False) -> bool:
         if not list_id:
             raise ValueError("You must pass a list ID to cache a list.")
-        list_cache = self._get_list_cache(list_id)
+        list_cache: TrancoCacheType = self._get_list_cache(list_id)
         if list_cache == TrancoCacheType.NOT_CACHED:
             return False
 
@@ -85,18 +90,20 @@ class Tranco():
             return False
         return True
 
-    def _add_to_cache(self, list_id=None, full=False):
+    def _add_to_cache(self, list_id: Optional[str] = None, full: bool = False) -> None:
         if not list_id:
             raise ValueError("You must pass a list ID to cache a list.")
-        self.cache_metadata[list_id] = max(TrancoCacheType.CACHED_FULL if full else TrancoCacheType.CACHED_NOT_FULL, self._get_list_cache(list_id))
+        self.cache_metadata[list_id] = max(TrancoCacheType.CACHED_FULL if full else TrancoCacheType.CACHED_NOT_FULL,
+                                           self._get_list_cache(list_id))
         self._write_cache_metadata()
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         for f in os.listdir(self.cache_dir):
             os.remove(os.path.join(self.cache_dir, f))
         self._load_cache_metadata()
 
-    def list(self, date=None, list_id=None, subdomains=False, full=False):
+    def list(self, date: Optional[str] = None, list_id: Optional[str] = None, subdomains: bool = False,
+             full: bool = False) -> TrancoList:
         """
         Retrieve a Tranco top list.
         :param date: Get the daily list for this date. If not given, the latest list is returned.
@@ -127,21 +134,22 @@ class Tranco():
 
         return TrancoList(date, list_id, list(map(lambda x: x[x.index(',') + 1:], top_list_lines)))
 
-    def _get_list_id_for_date(self, date, subdomains=False):
-        r1 = self.session.get('https://tranco-list.eu/daily_list_id?date={}&subdomains={}'.format(date, str(subdomains).lower()))
+    def _get_list_id_for_date(self, date: str, subdomains: bool = False) -> str:
+        r1 = self.session.get(
+            'https://tranco-list.eu/daily_list_id?date={}&subdomains={}'.format(date, str(subdomains).lower()))
         if r1.status_code == 200:
             return r1.text
         else:
             raise AttributeError("The daily list for this date is currently unavailable.")
 
-    def _download_file(self, list_id, full=False):
+    def _download_file(self, list_id: str, full: bool = False) -> None:
         if full:
             self._download_full_file(list_id)
         else:
             self._download_zip_file(list_id)
         self._add_to_cache(list_id, full)
 
-    def _download_zip_file(self, list_id):
+    def _download_zip_file(self, list_id: str) -> None:
         download_url = 'https://tranco-list.eu/download_daily/{}'.format(list_id)
         r = self.session.get(download_url, stream=True)
         if r.status_code == 200:
@@ -167,7 +175,7 @@ class Tranco():
             # List unavailable (non-success status code)
             raise AttributeError("The daily list for this date is currently unavailable.")
 
-    def _download_full_file(self, list_id):
+    def _download_full_file(self, list_id: str) -> None:
         download_url = 'https://tranco-list.eu/download/{}/full'.format(list_id)
         r = self.session.get(download_url)
         if r.status_code == 200:
@@ -175,7 +183,7 @@ class Tranco():
             with open(self._cache_path(list_id), 'wb') as f:
                 f.write(file_bytes)
 
-    def configure(self, configuration):
+    def configure(self, configuration: Dict[str, Any]) -> Tuple[bool, str]:
         """
         Configure a custom list (https://tranco-list.eu/configure).
         Requires that valid credentials were passed when creating the `Tranco` object.
@@ -212,7 +220,7 @@ class Tranco():
         elif r.status_code == 403 or r.status_code == 502 or r.status_code == 503:
             raise ValueError("This service is temporarily unavailable.")
 
-    def list_metadata(self, list_id):
+    def list_metadata(self, list_id: str) -> Dict[str, Any]:
         """
         Retrieve metadata for list (whether it is already available, what its configuration is, ...)
         :param list_id: ID of the list for which to query metadata
