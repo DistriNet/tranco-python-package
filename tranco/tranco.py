@@ -146,19 +146,7 @@ class Tranco():
         """
         Retrieve metadata for list (whether it is already available, what its configuration is, ...)
         :param list_id: ID of the list for which to query metadata
-        :return: dictionary with the following information:
-        ```
-        {
-          "list_id": String,
-          "available": Boolean,
-          "download": String,
-          "created_on":
-            Date(YYYY-mm-ddTHH:MM:SS.ffffff),
-          "configuration": Configuration,
-          "failed": Boolean,
-          "jobs_ahead": Integer
-        }
-        ```
+        :return: dictionary with the information listed at https://tranco-list.eu/api_documentation
         """
         r = self.session.get("https://tranco-list.eu/api/lists/id/{list_id}".format(list_id=list_id))
         if r.status_code == 404:
