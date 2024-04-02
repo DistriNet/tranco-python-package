@@ -130,7 +130,7 @@ class Tranco:
             if full:
                 top_list_lines = f.read().splitlines()
             else:
-                top_list_lines = list(islice(f, 1000000))
+                top_list_lines = [line.rstrip() for line in islice(f, 1000000)]
 
         return TrancoList(date, list_id, list(map(lambda x: x[x.index(',') + 1:], top_list_lines)))
 
