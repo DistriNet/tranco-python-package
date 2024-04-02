@@ -11,7 +11,7 @@ import zipfile
 from warnings import warn
 from enum import IntEnum
 
-VERSION = '0.8.0'
+VERSION = '0.8.1'
 
 
 class TrancoList:
